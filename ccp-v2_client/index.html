@@ -1,0 +1,1206 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Enghouse AmazonConnect - Vidyo Chat Demo</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+
+    <script src="https://code.jquery.com/jquery-3.1.0.min.js"></script>
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+
+    <!-- Bootstrap styles -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+</head>
+
+<body>
+    <style>
+        #ccpContainer {
+            width: 200px;
+            height: 525px;
+            overflow: hidden;
+            float: left;
+            margin-left: 22px;
+            padding: 10px;
+        }
+        
+        nav {
+            width: 690px;
+        }
+        
+        .section-main {
+            padding: 10px;
+            /* max-width: 669px;
+            height: 511px;
+            margin-left: 22px;
+            float: left;
+            overflow: auto;
+             width: 100%;
+            height: 100%; 
+            position: absolute;
+            top: 0;
+            display: table-cell;
+            left: 0; */
+        }
+        
+        .section-chat {
+            width: 100%;
+            height: 100%;
+            /* position: absolute; */
+            /* top: 0; */
+            left: 710px;
+            display: table-cell;
+            padding: 3px;
+            /* max-width: 365px;
+            height: 525px; */
+            margin-left: 3px;
+            float: left;
+            overflow: auto;
+            border-radius: 5px 5px 45px 5px;
+        }
+        
+        #root {
+            overflow: auto;
+            float: left;
+        }
+        
+        #root>div {
+            overflow-y: auto;
+            overflow-x: hidden;
+            width: 330px;
+            height: 485px;
+            font-size: 14px;
+        }
+        
+        #startChat {
+            width: auto;
+            cursor: pointer;
+            position: relative;
+            border: 1px solid #282828;
+            color: #fff;
+            padding: 1px 15px;
+            text-decoration: none;
+            font-size: 1.1em;
+            background: #555;
+            background: -webkit-gradient(linear, left bottom, left top, color-stop(0.12, rgb(60, 60, 60)), color-stop(1, rgb(85, 85, 85)));
+            background: -moz-linear-gradient(center bottom, rgb(60, 60, 60) 12%, rgb(85, 85, 85) 100%);
+            box-shadow: 0 2px 3px rgba(0, 0, 0, 0.25);
+            -moz-box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
+            -webkit-box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
+            text-shadow: 0 -1px 1px rgba(0, 0, 0, 0.25);
+        }
+        
+        .centered {
+            text-align: center;
+        }
+        
+        .spinner.loading {
+            display: none;
+            padding: 50px;
+            text-align: center;
+        }
+        
+        .loading-text {
+            width: 90px;
+            position: absolute;
+            top: 245px;
+            left: 137px;
+            text-align: center;
+        }
+        
+        .spinner.loading:before {
+            content: "";
+            height: 110px;
+            width: 110px;
+            margin: -15px auto auto -15px;
+            position: absolute;
+            top: 218px;
+            left: 143px;
+            border-width: 5px;
+            border-style: solid;
+            border-color: #2180c0 #ccc #ccc;
+            border-radius: 100%;
+            animation: rotation .7s infinite linear;
+        }
+        
+        @keyframes rotation {
+            from {
+                transform: rotate(0deg);
+            }
+            to {
+                transform: rotate(359deg);
+            }
+        }
+        
+        ol.normal {
+            list-style-type: disc;
+            padding-left: 50px;
+        }
+        
+        .wrap {
+            white-space: nowrap;
+        }
+        
+        .header-wrapper {
+            background: #3F5773;
+            text-align: center;
+            padding: 10px;
+            color: #fff;
+            border-radius: 3px;
+        }
+        
+        .welcome-text {
+            margin: 10px;
+            padding-right: 40px;
+            padding-left: 10px;
+            display: inline;
+        }
+        
+        .footer-actions {
+            background: #eee;
+            height: 85px;
+        }
+        
+        .button-wrapper {
+            display: flex;
+            justify-content: center;
+            flex-direction: row;
+            height: 100%;
+            align-items: center;
+            border-radius: 5px;
+        }
+        
+        .button-wrapper>button {
+            min-width: 85px;
+            margin: 6px;
+            font-weight: bold;
+        }
+        
+        .action-button {
+            width: 43%;
+            line-height: 1.465;
+            font-weight: normal;
+            white-space: nowrap;
+            color: rgb(255, 255, 255);
+            cursor: pointer;
+            text-align: center;
+            vertical-align: middle;
+            padding-right: 10px;
+            padding-left: 10px;
+            font-family: AmazonEmber_Md, Helvetica, sans-serif;
+            display: inline-flex;
+            -webkit-box-align: center;
+            align-items: center;
+            -webkit-box-pack: center;
+            justify-content: center;
+            max-width: 260px;
+            padding-top: 0.45rem;
+            padding-bottom: 0.45rem;
+            font-size: 0.875rem;
+            box-shadow: rgba(0, 0, 0, 0.1) 1px 2px 3px 0px;
+            border-width: 0px;
+            border-style: solid;
+            background: linear-gradient(rgb(208, 2, 27), rgb(208, 2, 27) 80%, rgb(233, 2, 30));
+            border-color: rgb(208, 2, 27);
+        }
+        /* Vidyo */
+        
+        #switch-views-btn {
+            position: fixed;
+            z-index: 2;
+            display: none;
+            left: 313px;
+            top: 23px;
+        }
+        
+        #loading-vidyo {
+            position: fixed;
+            left: 276px;
+            top: 57px;
+            z-index: 2;
+            opacity: 0.9;
+            display: none;
+        }
+        
+        #renderer {
+            width: 330px;
+            height: 485px;
+            float: right;
+            margin: 14px;
+            background-color: rebeccapurple;
+            float: left;
+            display: none;
+        }
+        /* vidyo loader */
+        
+        .lds-ellipsis {
+            display: inline-block;
+            position: relative;
+            width: 80px;
+            height: 80px;
+        }
+        
+        .lds-ellipsis div {
+            position: absolute;
+            top: 33px;
+            width: 13px;
+            height: 13px;
+            border-radius: 50%;
+            background: #fff;
+            animation-timing-function: cubic-bezier(0, 1, 1, 0);
+        }
+        
+        .lds-ellipsis div:nth-child(1) {
+            left: 8px;
+            animation: lds-ellipsis1 0.6s infinite;
+        }
+        
+        .lds-ellipsis div:nth-child(2) {
+            left: 8px;
+            animation: lds-ellipsis2 0.6s infinite;
+        }
+        
+        .lds-ellipsis div:nth-child(3) {
+            left: 32px;
+            animation: lds-ellipsis2 0.6s infinite;
+        }
+        
+        .lds-ellipsis div:nth-child(4) {
+            left: 56px;
+            animation: lds-ellipsis3 0.6s infinite;
+        }
+        
+        @keyframes lds-ellipsis1 {
+            0% {
+                transform: scale(0);
+            }
+            100% {
+                transform: scale(1);
+            }
+        }
+        
+        @keyframes lds-ellipsis3 {
+            0% {
+                transform: scale(1);
+            }
+            100% {
+                transform: scale(0);
+            }
+        }
+        
+        @keyframes lds-ellipsis2 {
+            0% {
+                transform: translate(0, 0);
+            }
+            100% {
+                transform: translate(24px, 0);
+            }
+        }
+        
+        .btn-circle {
+            width: 30px;
+            height: 30px;
+            padding: 2px 0px;
+            border-radius: 15px;
+            text-align: center;
+            font-size: 12px;
+            line-height: 1.42857;
+        }
+        
+        #ctrl-btns-wrapper {
+            top: 22px;
+            left: 25px;
+            width: 223px;
+            height: 50px;
+            z-index: 22;
+            position: fixed;
+            display: none;
+        }
+        
+        #loader-text {
+            top: 82px;
+            position: fixed;
+            left: 94px;
+            z-index: 2;
+            color: white;
+            font-weight: 500;
+            display: none;
+        }
+    </style>
+    <div class="wrap">
+        <section class="section-main" id="section-main">
+            <header>
+                <h1 style="font-size: 1.5em">Enghouse AmazonConnect</h1>
+                <h1 style="font-size: 1.5em">Vidyo Chat Demo</h1>
+            </header>
+
+            <form name="contactDetails" id="contactDetails" style="padding-top: 30px">
+                <div class="form-group">
+                    <input type="text" class="form-control" id="firstName" aria-describedby="firstName" placeholder="First Name">
+                </div>
+                <div class="form-group">
+                    <input type="text" class="form-control" id="username" aria-describedby="username" placeholder="Username">
+                </div>
+                <button id="startChat" type="submit" class="btn btn-primary submit">Start Chat</button>
+            </form>
+
+        </section>
+
+        <section class="section-chat" id="section-chat" style="display: none">
+
+            <div id="renderer">
+
+            </div>
+            <button id="switch-views-btn" onClick="onSwitchViews()" type="button" class="btn btn-primary btn-circle">
+                
+                <i id="switch-views-icon" class="material-icons">videocam</i>	
+            </button>
+            <div id="chatWrapper">
+                <div id="ctrl-btns-wrapper">
+                    <button id="mic-btn" onClick="toggleMic()" style="    margin-left: 6px;" type="button" class="btn btn-warning btn-circle btn-lg"><i id="mic-icon" class="material-icons">mic</i>
+                    </button>
+                    <button id="video-btn" onClick="toggleVideo()" style="    margin-left: 6px;" type="button" class="btn btn-info btn-circle btn-lg"><i id="video-icon" class="material-icons">videocam</i>	
+                    </button>
+                    <button id="share-btn" onClick="toggleShare()" style="    margin-left: 6px;" type="button" class="btn btn-primary btn-circle btn-lg"><i id="share-icon" class="material-icons">stop_screen_share</i>	
+                    </button>
+                    <button id="switch-cam-btn" onClick="switchCamera()" style="    margin-left: 6px;" type="button" class="btn btn-info btn-circle btn-lg"><i id="switch-icon" class="material-icons">switch_video</i>	
+                    </button>
+                    <button id="close-btn" onClick="disconnectVidyoSessionClicked()" style="    margin-left: 6px;" type="button" class="btn btn-danger btn-circle btn-lg"><i id="close-icon" class="material-icons">close</i>	
+                    </button>
+                </div>
+                <span id="loader-text" class="video-loader">
+                    Connecting to video call...
+                </span>
+
+                <div id="loading-vidyo" class="lds-ellipsis video-loader">
+                    <div></div>
+                    <div></div>
+                    <div></div>
+                    <div></div>
+                </div>
+                <div id="root"></div>
+            </div>
+            <div class="centered">
+                <div id="divSpinner" class="spinner loading">
+                    <div class="loading-text">Loading</div>
+                </div>
+
+                <script>
+                    ! function(l) {
+                        function e(e) {
+                            for (var r, t, n = e[0], o = e[1], u = e[2], f = 0, i = []; f < n.length; f++) t = n[f], p[
+                                    t] &&
+                                i.push(
+                                    p[t][0]), p[t] = 0;
+                            for (r in o) Object.prototype.hasOwnProperty.call(o, r) && (l[r] = o[r]);
+                            for (s && s(e); i.length;) i.shift()();
+                            return c.push.apply(c, u || []), a()
+                        }
+
+                        function a() {
+                            for (var e, r = 0; r < c.length; r++) {
+                                for (var t = c[r], n = !0, o = 1; o < t.length; o++) {
+                                    var u = t[o];
+                                    0 !== p[u] && (n = !1)
+                                }
+                                n && (c.splice(r--, 1), e = f(f.s = t[0]))
+                            }
+                            return e
+                        }
+                        var t = {},
+                            p = {
+                                1: 0
+                            },
+                            c = [];
+
+                        function f(e) {
+                            if (t[e]) return t[e].exports;
+                            var r = t[e] = {
+                                i: e,
+                                l: !1,
+                                exports: {}
+                            };
+                            return l[e].call(r.exports, r, r.exports, f), r.l = !0, r.exports
+                        }
+                        f.m = l, f.c = t, f.d = function(e, r, t) {
+                            f.o(e, r) || Object.defineProperty(e, r, {
+                                enumerable: !0,
+                                get: t
+                            })
+                        }, f.r = function(e) {
+                            "undefined" != typeof Symbol && Symbol.toStringTag && Object.defineProperty(e, Symbol
+                                .toStringTag, {
+                                    value: "Module"
+                                }), Object.defineProperty(e, "__esModule", {
+                                value: !0
+                            })
+                        }, f.t = function(r, e) {
+                            if (1 & e && (r = f(r)), 8 & e) return r;
+                            if (4 & e && "object" == typeof r && r && r.__esModule) return r;
+                            var t = Object.create(null);
+                            if (f.r(t), Object.defineProperty(t, "default", {
+                                    enumerable: !0,
+                                    value: r
+                                }), 2 & e && "string" != typeof r)
+                                for (var n in r) f.d(t, n, function(e) {
+                                    return r[e]
+                                }.bind(null, n));
+                            return t
+                        }, f.n = function(e) {
+                            var r = e && e.__esModule ? function() {
+                                return e.default
+                            } : function() {
+                                return e
+                            };
+                            return f.d(r, "a", r), r
+                        }, f.o = function(e, r) {
+                            return Object.prototype.hasOwnProperty.call(e, r)
+                        }, f.p = "./";
+                        var r = window.webpackJsonp = window.webpackJsonp || [],
+                            n = r.push.bind(r);
+                        r.push = e, r = r.slice();
+                        for (var o = 0; o < r.length; o++) e(r[o]);
+                        var s = n;
+                        a()
+                    }([])
+                </script>
+
+                <script src="js/amazon-connect-chat-interface.js"></script>
+        </section>
+        </div>
+
+        <script>
+            var vidyoConnector = {};
+            var vidyoChatMessageParams = null;
+            var localShare;
+            var nowShare = false;
+            var nowVideo = false;
+            var nowMic = false;
+            var vidyoStopped = false; //in order of cancel before or after connection established
+            var videoSessionState = null; //null, remote, local 
+
+
+            $(document).ready((a) => {
+                connect.ChatInterface.init({
+                    containerId: 'root',
+                    headerConfig: {
+                        isHTML: true,
+                        render: () => {
+                            return (`
+                            <div class="header-wrapper">
+                                <h2 class="welcome-text">Chat Demo</h2>
+                                <p id="chatDescription">You can modify this header or use the default.</p>
+                            </div>
+                        `)
+                        }
+                    }
+                });
+
+                //console functions override
+                if (window.console && console.log && console.error && console.debug) {
+                    var oldConsoleLog = console.log;
+                    var oldConsoleError = console.error;
+                    var oldConsoleDebug = console.debug;
+                    console.log = function() {
+                        Array.prototype.unshift.call(arguments, 'Vidyo: ');
+                        oldConsoleLog.apply(this, arguments)
+                    }
+                    console.error = function() {
+                        Array.prototype.unshift.call(arguments, 'Vidyo: ');
+                        oldConsoleError.apply(this, arguments)
+                    }
+                    console.debug = function() {
+                        Array.prototype.unshift.call(arguments, 'Vidyo: ');
+                        oldConsoleDebug.apply(this, arguments)
+                    }
+                }
+                window.onbeforeunload = event => {
+
+                    console.log(`on onbeforeunload..`);
+                    window.connect = connect;
+                    //     let e = event || window.event;
+                    //     // For IE and Firefox
+                    //     // if (e) {
+                    //     // e.returnValue = !store.getters.isConnect ? undefined : "";
+                    //     e.returnValue = "";
+                    //     // }
+                    //     // For Chrome and Safari
+                    //     // return !store.getters.isConnect ? undefined : "";
+                    //     return "";
+                }
+                window.addEventListener("unload", () => {
+
+                    console.debug("on unload..");
+
+                });
+            });
+
+            $(function() {
+                $('#contactDetails').submit(function(e) {
+                    e.preventDefault();
+
+                    var customerName = $('#firstName').val();
+                    var username = $('#username').val();
+                    if (!customerName || !username) {
+                        alert('you must enter a name & username');
+                        document.getElementById("contactDetails").reset();
+                    } else {
+
+                        console.log("this is the first name:" + customerName);
+                        console.log("this is the username: " + username);
+                        document.getElementById("contactDetails").reset();
+                        connect.ChatInterface.initiateChat({
+                            name: customerName,
+                            username: username,
+                            region: "eu-west-2",
+                            apiGatewayEndpoint: "https://0poi9ipnr7.execute-api.eu-west-2.amazonaws.com/Prod",
+                            contactAttributes: JSON.stringify({
+                                "customerName": customerName
+                            }),
+                            contactFlowId: "0d0d5c2f-7863-4d96-9c15-f7388ab6b4a7",
+                            instanceId: "073637a9-fc81-4a5e-8499-b247a1fad982"
+                        }, successHandler, failureHandler)
+
+                        $('#firstName').blur();
+                        $('#username').blur();
+                        document.getElementById("startChat").disabled = true;
+                        document.getElementById("firstName").disabled = true;
+                        document.getElementById("username").disabled = true;
+                        $("#nav").css("width", "1063");
+                        $('#chatWrapper').hide();
+                        $(".section-main").hide();
+                        $("#section-chat").show("slide");
+                        $("#section-chat").draggable({
+                            handle: ".header-wrapper"
+                        });
+                        $("#divSpinner").delay(310).fadeIn();
+
+                    }
+
+                });
+            });
+
+            //Chat Management
+
+            function successHandler(chatSession) {
+                window.chatSession = chatSession;
+
+                // chat connected
+
+                $("#divSpinner").fadeOut(200);
+                $('#chatWrapper').fadeIn(400);
+
+                //Change the incoming data set
+                chatSession.incomingItemDecorator = function(item) {
+                    if (["SYSTEM_MESSAGE"].indexOf(item.displayName) !== -1) {
+                        item.displayName = "System Message";
+                    }
+
+                    if (chatSession.transcript.length > 0) {
+                        var transcriptItem = chatSession.transcript[chatSession.transcript.length - 1];
+                        if (transcriptItem.transportDetails.direction === "Incoming") {
+                            var chatDescription = "This is a demo of a customer chat experience.";
+                            var name = transcriptItem.displayName;
+                            if (["prod", "$LATEST", "AI Assistant", "SYSTEM_MESSAGE", "System Message"].indexOf(name) === -1) {
+                                chatDescription = "You are now chatting with " + name;
+                            }
+                            document.getElementById("chatDescription").innerHTML = chatDescription;
+                        }
+                    }
+
+                    return item;
+                }
+
+                chatSession.onIncoming(function(data) {
+                    console.log("incoming message:|| " + JSON.stringify(data));
+
+                    //on get link to start video call
+                    if (data.Content && data.Content.indexOf("https://static.vidyo.io/latest/connector/VidyoConnector.html?") !== -1) {
+                        vidyoStopped = false;
+                        vidyoChatMessageParams = getCustomUrlVars(data.Content);
+                        initVidyo();
+                    }
+
+                    //On get message about end video call
+                    if (data.Content && data.Content.indexOf("system:cancel_vidyo_session") !== -1) {
+                        console.debug("system:cancel_vidyo_session");
+                        disconnectVidyoSession();
+                    }
+
+                    //On Agent has disconnected chat
+                    if (data.ParticipantRole == "AGENT" && data.ContentType == "application/vnd.amazonaws.connect.event.participant.left" && videoSessionState !== null) {
+                        console.debug("Afent left chat");
+                        disconnectVidyoSession();
+                    }
+                });
+
+                // chatSession.client.session.onMessage(function(data) {
+                //     console.log(data, "onMessage")
+                // })
+                // chatSession.client.session.onTyping(function(data) {
+                //     console.log(data, "onTyping")
+                // })
+
+                chatSession.onChatDisconnected(function(data) {
+                    resetForm();
+                    disconnectVidyoSession(true);
+                });
+
+
+                connect.ChatInterface.init({
+                    containerId: 'root',
+                    headerConfig: {
+                        isHTML: true,
+                        render: () => {
+                            return (`
+                            <div class="header-wrapper">
+                                <h2 class="welcome-text">Chat Vidyo Demo</h2>
+                                <p id="chatDescription">Caller's device view.</p>
+                            </div>
+                        `)
+                        }
+                    }
+                });
+            }
+
+            function failureHandler(error) {
+                // chat failed
+                console.log("failed", error);
+            }
+
+            function resetForm() {
+                document.getElementById("startChat").disabled = false;
+                document.getElementById("firstName").disabled = false;
+                document.getElementById("username").disabled = false;
+                $("#section-chat").removeAttr('style');
+                $("#nav").css("width", "690");
+                $("#section-chat").hide("slide");
+                $("#section-main").show("slide");
+                document.getElementById("contactDetails").reset();
+            }
+
+            //Vidyo methods
+            // 
+            function initVidyo() {
+                console.debug("Vidyo: on initVidyo");
+                $(".video-loader").show();
+
+                if (vidyoConnector && vidyoConnector.GetState && vidyoConnector.GetState()._result == "VIDYO_CONNECTORSTATE_Ready") {
+                    console.debug("Already exist vidyoConnector");
+                    videoSessionState = "local"
+                    nowVideo = true;
+                    nowMic = true;
+
+                    setInterval(() => {
+                        Array.from(document.querySelectorAll("video")).forEach((el) => {
+                            el.setAttribute("playsinline", "playsinline");
+                        });
+                    }, 100);
+
+                    //set devices
+                    vidyoConnector.SelectDefaultCamera();
+                    vidyoConnector.SelectDefaultMicrophone();
+                    vidyoConnector.SelectDefaultSpeaker();
+
+                    joinVidyoCall();
+                    return;
+                }
+
+                let script = document.createElement("script");
+                script.type = "text/javascript";
+                script.id = "VidyoClientScript";
+                script.src =
+                    "https://static.vidyo.io/latest/javascript/VidyoClient/VidyoClient.js?onload=onVidyoClientLoaded&webrtc=true&plugin=false";
+                document.body.appendChild(script);
+                console.debug("on finish load vidyo library");
+            }
+            // register device for Vidyo call
+            function registerVidyoListeners() {
+                console.debug(" on register device");
+                vidyoConnector
+                    .RegisterLocalCameraEventListener({
+                        onAdded: function(localCamera) {
+                            console.debug("localCamera onAdded", localCamera);
+                        },
+                        onRemoved: function(localCamera) {},
+                        onSelected: function(localCamera) {
+                            if (localCamera) {
+                                localCamera.SetPreviewLabel({
+                                    previewLabel: chatSession.thisParticipant.displayName,
+                                });
+                            }
+                        },
+                        onStateUpdated: function(localCamera, state) {},
+                    })
+                    .then(function() {
+                        console.debug("RegisterLocalCameraEventListener Success");
+                    })
+                    .catch(function() {
+                        console.error("RegisterLocalCameraEventListener Failed");
+                    });
+
+                vidyoConnector
+                    .RegisterLocalMicrophoneEventListener({
+                        onAdded: function(localMicrophone) {
+                            console.debug("localMicrophone onAdded");
+                        },
+                        onRemoved: function(localMicrophone) {},
+                        onSelected: function(localMicrophone) {},
+                        onStateUpdated: function(localMicrophone, state) {},
+                    })
+                    .then(function() {
+                        console.debug("RegisterLocalMicrophoneEventListener Success");
+                    })
+                    .catch(function() {
+                        console.error("RegisterLocalMicrophoneEventListener Failed");
+                    });
+
+                vidyoConnector
+                    .RegisterLocalSpeakerEventListener({
+                        onAdded: function(localSpeaker) {
+                            console.debug("localSpeaker onAdded");
+                        },
+                        onRemoved: function(localSpeaker) {},
+                        onSelected: function(localSpeaker) {},
+                        onStateUpdated: function(localSpeaker, state) {},
+                    })
+                    .then(function() {
+                        console.debug("RegisterLocalSpeakerEventListener Success");
+                    })
+                    .catch(function() {
+                        console.error("RegisterLocalSpeakerEventListener Failed");
+                    });
+
+                vidyoConnector
+                    .RegisterLocalWindowShareEventListener({
+                        onAdded: (localWindowShare) => {
+                            console.log("RegisterLocalWindowShareEventListener onAdded", localWindowShare)
+                            localShare = localWindowShare;
+                        },
+                        onRemoved: (localWindowShare) => {
+                            console.log("RegisterLocalWindowShareEventListener onRemoved", localWindowShare)
+                        },
+                        onSelected: function(localWindowShare) {
+                            if (!localWindowShare) {
+                                console.debug("Vidyo: Stop SelectLocalWindowShare Success");
+                                nowShare = false;
+                                $("#share-icon").html("stop_screen_share");
+                            }
+                        },
+                        onStateUpdated: function(localWindowShare, state) {
+                            console.log("RegisterLocalWindowShareEventListener onStateUpdated", localWindowShare, state)
+                        },
+                    })
+                    .then(function(result) {
+                        if (result) {
+                            console.debug("RegisterLocalWindowShareEventListener Success");
+                        } else {
+                            console.error("RegisterLocalWindowShareEventListener Failed");
+                        }
+                    })
+                    .catch(function() {
+                        console.error("RegisterLocalWindowShareEventListener Failed");
+                    });
+
+                /* Register to receive chat messages */
+                vidyoConnector.RegisterMessageEventListener({
+                    onChatMessageReceived: function(participant, chatMessage) {
+                        /* Message received from other participant */
+                        console.log("onChatMessageReceived : participant, chatMessage ", participant, chatMessage);
+                    }
+                }).then(function() {
+                    console.log("RegisterMessageEventListener Success");
+                }).catch(function() {
+                    console.err("RegisterMessageEventListener Failed");
+                });
+
+                vidyoConnector
+                    .RegisterParticipantEventListener({
+                        onJoined: function(participant) {
+                            console.debug("Vidyo: Participant Joined ", participant);
+                            /* Participant Joined */
+                        },
+                        onLeft: function(participant) {
+                            console.debug("Vidyo: Participant Left ", participant);
+                        },
+                        onDynamicChanged: function(participants) {
+                            console.debug(
+                                "Vidyo: Ordered array of participants according to rank ",
+                                participants
+                            );
+                            if (participants.length == 1 && participants[0].isLocal) {
+                                console.debug("Vidyo: Left only me on converasation...");
+                            }
+                            /* Ordered array of participants according to rank */
+                        },
+                        onLoudestChanged: function(participant, audioOnly) {
+                            /* Current loudest speaker */
+                            console.debug("Vidyo: onLoudestChanged", participant, audioOnly);
+                        },
+                    })
+                    .then(function() {
+                        console.debug("Vidyo: RegisterParticipantEventListener Success");
+                    })
+                    .catch(function() {
+                        console.error("Vidyo: RegisterParticipantEventListener Failed");
+                    });
+
+            }
+            //switch video cameras
+            function switchCamera() {
+                vidyoConnector.CycleCamera();
+            }
+            //called from Vidyo script
+            function onVidyoClientLoaded(status) {
+                //not continue if connecting vidyo aborted
+                if (vidyoStopped) {
+                    return;
+                }
+
+                console.debug("VidyoClient load state - " + status.state);
+                if (status.state == "READY") {
+                    VC.CreateVidyoConnector({
+                            viewId: "renderer", // Div ID where the composited video will be rendered, see VidyoConnector.html;
+                            viewStyle: "VIDYO_CONNECTORVIEWSTYLE_Default", // Visual style of the composited renderer
+                            remoteParticipants: 8, // Maximum number of participants to render
+                            logFileFilter: "warning all@VidyoClient all@VidyoConnector",
+                            logFileName: "",
+                            userData: "",
+                        })
+                        .then(function(vc) {
+                            //not continue if connecting vidyo aborted
+                            //needed here because it's async response
+                            if (vidyoStopped) {
+                                return;
+                            }
+                            console.debug("CreateVidyoConnector success");
+                            vidyoConnector = vc;
+                            videoSessionState = "local"
+                            nowVideo = true;
+                            nowMic = true;
+
+                            setInterval(() => {
+                                Array.from(document.querySelectorAll("video")).forEach((el) => {
+                                    el.setAttribute("playsinline", "playsinline");
+                                });
+                            }, 100);
+                            joinVidyoCall();
+                            registerVidyoListeners();
+                        })
+                        .catch(function(error) {
+                            console.error("CreateVidyoConnector Failed " + error);
+                        });
+                }
+            }
+            //join
+            function joinVidyoCall() {
+                //not continue if connecting vidyo aborted
+                if (vidyoStopped) {
+                    return;
+                }
+                vidyoConnector.Connect({
+                    host: "prod.vidyo.io", // Server name, for most production apps it will be prod.vidyo.io
+                    token: vidyoChatMessageParams.token,
+                    displayName: vidyoChatMessageParams.displayname, // Display name, affect only the agent screen when he see me.
+                    resourceId: vidyoChatMessageParams.resourceid, // Room name
+
+                    onSuccess: function() {
+                        console.debug("Vidyo: room Connected!! YAY!");
+                        videoSessionState = "remote"
+                        $(".video-loader").hide();
+                        $("#root").hide();
+                        $("#renderer").show();
+                        $("#switch-views-btn").show();
+                        $("#ctrl-btns-wrapper").show();
+                        $("#switch-cam-btn").show();
+
+                        $("#switch-views-icon").html("chat");
+                        $("#mic-icon").html("mic");
+                        $("#share-icon").html("stop_screen_share");
+                        $("#video-icon").html("videocam");
+                    },
+                    onFailure: function(reason) {
+                        $(".video-loader").hide();
+                        console.error("Vidyo: Room connection failed " + reason);
+                    },
+                    onDisconnected: function(reason) {
+                        console.debug("Vidyo: Room disconnected - " + reason);
+                        endVidyoSession();
+                    },
+                });
+            };
+
+            function endVidyoSession() {
+                vidyoChatMessageParams = null;
+                videoSessionState = null;
+
+                //set local devices 
+				console.debug("Vidyo: Set Local camera & Mic & Speaker to null");
+				if(vidyoConnector && vidyoConnector.SelectLocalCamera ){
+					vidyoConnector.SelectLocalCamera({
+						localCamera: null
+					});
+					vidyoConnector.SelectLocalMicrophone({
+						localMicrophone: null
+					});
+					vidyoConnector.SelectLocalSpeaker({
+						localSpeaker: null
+					});
+				}
+                console.debug("Vidyo: on unregisterVidyoListeners");
+                setTimeout(() => {
+                    console.log("hide buttons.. on agent disconnect video..")
+                    $("#renderer").hide();
+                    $("#root").show();
+                    $("#switch-views-btn").hide();
+                    $(".video-loader").hide();
+                    $("#ctrl-btns-wrapper").hide();
+
+                    $("#share-icon").html("stop_screen_share");
+                    $("#mic-icon").html("mic");
+                    $("#video-icon").html("videocam");
+
+
+                }, 1000);
+            }
+
+            function unregisterVidyoListeners() {
+                if (vidyoConnector && vidyoConnector.UnregisterLocalCameraEventListener) {
+                    vidyoConnector.UnregisterLocalCameraEventListener();
+                    vidyoConnector.UnregisterLocalMicrophoneEventListener();
+                    vidyoConnector.UnregisterLocalSpeakerEventListener();
+                    vidyoConnector.UnregisterLocalWindowShareEventListener();
+                    vidyoConnector.UnregisterParticipantEventListener();
+                    vidyoConnector.UnregisterMessageEventListener();
+
+                    vidyoConnector.SelectLocalCamera({
+                        localCamera: null
+                    });
+                    vidyoConnector.SelectLocalMicrophone({
+                        localMicrophone: null
+                    });
+                    vidyoConnector.SelectLocalSpeaker({
+                        localSpeaker: null
+                    });
+                    vidyoConnector.Destruct();
+                }
+                removeLibrary();
+                vidyoConnector = null;
+            }
+
+            function removeLibrary() {
+                console.debug("Vidyo: VidyoService on remove library from DOM");
+                let script = document.querySelector("script[src*='VidyoClient.js']");
+                let css = document.querySelector("link[href*='VidyoClient.css']");
+                if (script) {
+                    script.remove();
+                    console.debug("Vidyo: Script of Vidyo library removed from DOM");
+                }
+                if (css) {
+                    css.remove();
+                    console.debug("Vidyo: Css of Vidyo library removed from DOM");
+                }
+            }
+
+            function onSwitchViews() {
+                if ($("#renderer").is(":visible")) {
+                    $("#renderer").hide();
+                    $("#ctrl-btns-wrapper").hide();
+                    $("#root").show();
+                    $("#switch-views-icon").html("videocam");
+                } else {
+                    $("#renderer").show();
+                    $("#ctrl-btns-wrapper").show();
+                    $("#root").hide();
+                    $("#switch-views-icon").html("chat");
+                }
+            }
+
+            function getCustomUrlVars(url) {
+                let vars = {};
+                let parts = url.replace(/[?&]+([^=&]+)=([^&]*)/gi, function(m, key, value) {
+                    let k = key.toLowerCase();
+                    vars[k] = value;
+                });
+                return vars;
+            }
+
+            function startShare() {
+                return vidyoConnector
+                    .SelectLocalWindowShare({
+                        localWindowShare: localShare,
+                    })
+                    .then(function(res) {
+                        if (res) {
+                            console.debug("Vidyo: localWindowShare: " + localShare.name);
+                            console.debug("Vidyo: Start SelectLocalWindowShare Success");
+                            nowShare = true;
+                            $("#share-icon").html("screen_share");
+                        }
+                        return;
+                    })
+                    .catch(function() {
+                        console.error("Vidyo: Start SelectLocalWindowShare Failed");
+                        return;
+                    });
+            };
+
+            function stopShare() {
+                return vidyoConnector
+                    .SelectLocalWindowShare({
+                        localWindowShare: null,
+                    })
+                    .then(function() {
+                        console.debug("Vidyo: Stop SelectLocalWindowShare Success");
+                        nowShare = false;
+                        $("#share-icon").html("stop_screen_share");
+                        return;
+                    })
+                    .catch(function() {
+                        console.error("Vidyo: Stop SelectLocalWindowShare Failed");
+                        return;
+                    });
+            };
+
+            function muteCamera() {
+                return vidyoConnector
+                    .SetCameraPrivacy({
+                        privacy: true,
+                    })
+                    .then(function(res) {
+                        console.debug("Vidyo: Mute Camera Success");
+                        $("#video-icon").html("videocam_off");
+                        nowVideo = false;
+                        return res;
+                    })
+                    .catch(function() {
+                        console.error("Vidyo: Mute Camera Failed");
+                    });
+            };
+
+            function unmuteCamera() {
+                return vidyoConnector
+                    .SetCameraPrivacy({
+                        privacy: false,
+                    })
+                    .then(function() {
+                        console.debug("Vidyo: Unmute Camera Success");
+                        $("#video-icon").html("videocam");
+                        nowVideo = true;
+                        return;
+                    })
+                    .catch(function() {
+                        console.error("Vidyo: Unmute Camera Failed");
+                        return;
+                    });
+            };
+
+            function muteMicrophone() {
+                return vidyoConnector
+                    .SetMicrophonePrivacy({
+                        privacy: true,
+                    })
+                    .then(function() {
+                        console.debug("Vidyo: Mute Microphone Success");
+                        $("#mic-icon").html("mic_off");
+                        nowMic = false;
+                        return;
+                    })
+                    .catch(function() {
+                        console.error("Vidyo: Mute Microphone Failed");
+                        return;
+                    });
+            };
+
+            function unmuteMicrophone() {
+                return vidyoConnector
+                    .SetMicrophonePrivacy({
+                        privacy: false,
+                    })
+                    .then(function() {
+                        console.debug("Vidyo: Unmute Microphone Success");
+                        $("#mic-icon").html("mic");
+                        nowMic = true;
+                        return;
+                    })
+                    .catch(function() {
+                        console.error("Vidyo: Unmute Microphone Failed");
+                        return;
+                    });
+            };
+
+            function disconnectVidyoSessionClicked() {
+                vidyoConnector.SendChatMessage({
+                        message: "system:cancel_vidyo_session"
+                    }).then(() => {
+                        disconnectVidyoSession()
+                    })
+                    .catch(e => {
+                        console.error("Send Message Fail", e);
+                    })
+            };
+            //"full" it's mean with unregister - full disconnect
+            function disconnectVidyoSession(full) {
+                vidyoStopped = true;
+                if (!vidyoConnector || !vidyoConnector.Disconnect) {
+                    endVidyoSession();
+                    if (full) {
+                        unregisterVidyoListeners();
+                    }
+                    return;
+                }
+                return vidyoConnector
+                    .Disconnect()
+                    .then((e) => {
+                        endVidyoSession();
+                        if (full) {
+                            unregisterVidyoListeners();
+                        }
+                        console.debug("Vidyo: Disconnect Success", e);
+                        return;
+                    })
+                    .catch((e) => {
+                        console.error("Vidyo: Disconnect Fail", e);
+                        //in case of fail to disconnect but not connected
+                        if (vidyoConnector.GetState()._result !== "VIDYO_CONNECTORSTATE_Connected") {
+                            endVidyoSession();
+                            if (full) {
+                                unregisterVidyoListeners();
+                            }
+                        }
+                        return;
+                    });
+            };
+
+            function toggleShare() {
+                if (nowShare) {
+                    stopShare();
+                } else {
+                    startShare();
+                }
+            }
+
+            function toggleVideo() {
+                if (nowVideo) {
+                    muteCamera();
+                } else {
+                    unmuteCamera();
+                }
+            }
+
+            function toggleMic() {
+                if (nowMic) {
+                    muteMicrophone();
+                } else {
+                    unmuteMicrophone();
+                }
+            }
+        </script>
+
+
+</body>
+
+</html>

@@ -1,0 +1,7 @@
+{
+    "vidyoApiUrlPrefix": "https://YOUR_HOST/Prod/VidyoRoom/",
+    "vidyoPlatformTenant": "YOUR_PLATFORM_TENANT",
+    "instanceName": "YOUR_INSTANCE_NAME",
+    "tokenAgentPassword": "YOUR_PASSWORD",
+    "timeoutForDisconnectVidyoMS": "60000"
+}

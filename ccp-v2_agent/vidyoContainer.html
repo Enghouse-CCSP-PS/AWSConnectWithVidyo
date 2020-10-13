@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en-US">
+
+<head>
+    <title>Vidyo container - agent</title>
+    <meta charset="UTF-8" />
+    <script src="connect-streams.min.js"></script>
+    <script src="amazon-connect-chatjs.min.js"></script>
+
+
+    <style>
+        *,
+        body {
+            margin: 0;
+            padding: 0;
+        }
+        
+        iframe {
+            border: 0px;
+        }
+        
+        #containerDiv {
+            width: 50%;
+            height: 600px;
+            float: left;
+        }
+        
+        #renderer {
+            width: 50%;
+            height: 600px;
+            float: left;
+        }
+        /* vidyo loader */
+        
+        .lds-ellipsis {
+            display: inline-block;
+            position: relative;
+            width: 80px;
+            height: 20px;
+        }
+        
+        .lds-ellipsis div {
+            position: absolute;
+            top: 8px;
+            width: 13px;
+            height: 13px;
+            border-radius: 50%;
+            background: #fff;
+            animation-timing-function: cubic-bezier(0, 1, 1, 0);
+        }
+        
+        .lds-ellipsis div:nth-child(1) {
+            left: 8px;
+            animation: lds-ellipsis1 0.6s infinite;
+        }
+        
+        .lds-ellipsis div:nth-child(2) {
+            left: 8px;
+            animation: lds-ellipsis2 0.6s infinite;
+        }
+        
+        .lds-ellipsis div:nth-child(3) {
+            left: 32px;
+            animation: lds-ellipsis2 0.6s infinite;
+        }
+        
+        .lds-ellipsis div:nth-child(4) {
+            left: 56px;
+            animation: lds-ellipsis3 0.6s infinite;
+        }
+        
+        @keyframes lds-ellipsis1 {
+            0% {
+                transform: scale(0);
+            }
+            100% {
+                transform: scale(1);
+            }
+        }
+        
+        @keyframes lds-ellipsis3 {
+            0% {
+                transform: scale(1);
+            }
+            100% {
+                transform: scale(0);
+            }
+        }
+        
+        @keyframes lds-ellipsis2 {
+            0% {
+                transform: translate(0, 0);
+            }
+            100% {
+                transform: translate(24px, 0);
+            }
+        }
+        
+        .btns-wrapper {
+            width: 190px;
+            z-index: 2;
+            right: 0;
+            position: fixed;
+            top: 65px;
+        }
+        
+        .ctrl-btn {
+            float: right;
+            margin: 2px;
+        }
+        
+        .navbar {
+            background-color: #ddefff;
+            height: 60px;
+        }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+
+    <script src="https://code.jquery.com/jquery-3.1.0.min.js"></script>
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+
+    <link rel="icon" href="https://enghousecloud-dev.client.12kdev.net/wp-content/uploads/2019/03/cropped-site-icon-32x32.png?x75127" sizes="32x32" />
+
+
+    <!-- Vidyo chages -->
+
+    <!-- Bootstrap styles -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+
+
+    <!-- Sweet alert -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/limonte-sweetalert2/8.11.8/sweetalert2.all.js"></script>
+
+
+
+</head>
+
+<body>
+    <!-- Vidyo -->
+    <!-- Navigation -->
+    <nav class="navbar navbar-dark static-top">
+        <a class="navbar-brand">
+            <img style="width: 100px;" src="https://enghousecloud-dev.client.12kdev.net/wp-content/uploads/2019/03/EIlogobl.png?x75127" alt="">
+        </a>
+    </nav>
+
+    <div id="containerDiv"></div>
+
+    <!-- Vidyo -->
+    <div id="app">
+        <div id="renderer" v-show="vidyoCallStatus == vidyoCallStatusTypes.Connected || vidyoCallStatus == vidyoCallStatusTypes.Ready"></div>
+        <!-- vidyo controls buttons -->
+        <div class="btns-wrapper" v-if="vidyoCallStatus == vidyoCallStatusTypes.Connected || vidyoCallStatus == vidyoCallStatusTypes.Ready">
+            <button id="mic-btn" @click="toggleMic()" type="button" class="btn btn-warning rounded-circle btn-sm ctrl-btn"><i id="mic-icon" class="material-icons">{{nowMic ? 'mic' : 'mic_off'}}</i>
+            </button>
+            <button id="video-btn" @click="toggleVideo()" type="button" class="btn btn-info rounded-circle btn-sm ctrl-btn"><i id="video-icon" class="material-icons">{{nowVideo ? 'videocam' : 'videocam_off'}}</i>	
+            </button>
+            <button id="share-btn" @click="toggleShare()" type="button" class="btn btn-primary rounded-circle btn-sm ctrl-btn"><i id="share-icon" class="material-icons">{{nowShare ? 'screen_share' : 'stop_screen_share'}}</i>	
+            </button>
+            <button id="switch-btn" @click="switchCamera()" type="button" class="btn btn-danger rounded-circle btn-sm ctrl-btn"><i id="switch-icon" class="material-icons">switch_video</i>	
+            </button>
+        </div>
+        <!-- Vidyo div -->
+        <!-- start/end/wait vidyo session -->
+        <button v-if="vidyoCallStatus == vidyoCallStatusTypes.Disconnected" id="start-vidyo-call" :disabled="startBtnDisabled" @click="startVidyoSessionClicked()" style="width:100%" type="button" class="btn btn-primary">Start Vidyo call
+            <div v-if="startBtnDisabled" class="lds-ellipsis">
+                <div></div>
+                <div></div>
+                <div></div>
+                <div></div>
+            </div>
+        
+        </button>
+        <button v-if="vidyoCallStatus == vidyoCallStatusTypes.Connected || vidyoCallStatus == vidyoCallStatusTypes.Try || vidyoCallStatus == vidyoCallStatusTypes.Ready" id="end-vidyo-call" @click="disconnectVidyoSessionTriggered()" style="width:100%" type="button"
+            class="btn btn-danger">End Vidyo call</button>
+        <button v-if="vidyoCallStatus == vidyoCallStatusTypes.Try || vidyoCallStatus == vidyoCallStatusTypes.Ready" disabled style="width:100%" type="button" class="btn btn-warning">
+            {{ vidyoCallStatus == vidyoCallStatusTypes.Try ? 'Try to connect Vidyo call.. Please wait.': (vidyoCallStatus == vidyoCallStatusTypes.Ready ? 'Local Video ready. Try to connect remote..':'' )}}
+            <div class="lds-ellipsis">
+                <div></div>
+                <div></div>
+                <div></div>
+                <div></div>
+            </div>
+        </button>
+
+    </div>
+
+    <script src="vidyoContainerScript.js"></script>
+</body>
+
+</html>
